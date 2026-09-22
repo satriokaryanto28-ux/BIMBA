@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Latihan Belajar Bimba & PAUD - Level 2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;700&display=swap');
+        
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: #f0fdf4;
+        }
+
+        .font-fredoka {
+            font-family: 'Fredoka One', cursive;
+        }
+
+        .btn-choice {
+            transition: all 0.2s ease;
+        }
+        .btn-choice:active {
+            transform: scale(0.95);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .pop-in {
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
+
+    <!-- Main Container -->
+    <div id="quiz-container" class="w-full max-w-xl bg-white rounded-3xl shadow-2xl border-4 border-green-300 p-6 md:p-8 relative overflow-hidden">
+        
+        <!-- Header / Progress -->
+        <div class="flex justify-between items-center mb-6">
+            <div class="flex items-center space-x-2">
+                <span class="bg-green-500 text-white font-fredoka text-lg px-4 py-1 rounded-full shadow">
+                    Level 2 • Soal <span id="current-question">1</span> / 15
+                </span>
+                <span id="category-badge" class="bg-pink-400 text-white font-fredoka text-sm px-3 py-1 rounded-full shadow">
+                    Menulis
+                </span>
+            </div>
+            <div class="flex items-center space-x-1 text-yellow-500 font-fredoka text-xl">
+                <i class="fas fa-star text-2xl animate-bounce"></i>
+                <span id="score">0</span>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="w-full bg-gray-200 h-4 rounded-full mb-6 overflow-hidden border border-gray-300">
+            <div id="progress-bar" class="bg-green-500 h-full transition-all duration-300 rounded-full" style="width: 6.66%;"></div>
+        </div>
+
+        <!-- Question Card -->
+        <div id="question-card" class="pop-in flex flex-col items-center text-center">
+            
+            <!-- Category Title -->
+            <h2 id="instruction" class="text-xl md:text-2xl font-bold text-teal-700 mb-4">
+                Pilihlah suku kata yang tepat!
+            </h2>
+
+            <!-- Illustration Box -->
+            <div class="w-48 h-48 md:w-56 md:h-56 bg-emerald-50 rounded-2xl border-4 border-dashed border-emerald-300 flex items-center justify-center mb-6 shadow-inner relative overflow-hidden">
+                <div id="illustration" class="text-7xl md:text-8xl select-none">
+                    🚲
+                </div>
+            </div>
+
+            <!-- Question Text / Clue -->
+            <div id="question-display" class="text-2xl md:text-3xl font-fredoka text-gray-800 tracking-wide mb-6 bg-emerald-100 px-6 py-3 rounded-2xl border-2 border-emerald-300 w-full">
+                Se - pe - ...
+            </div>
+
+            <!-- Options Grid -->
+            <div id="options-container" class="grid grid-cols-2 gap-4 w-full">
+                <!-- Buttons dynamically loaded here -->
+            </div>
+
+        </div>
+
+        <!-- Feedback Overlay -->
+        <div id="feedback-modal" class="hidden absolute inset-0 bg-white/95 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center z-20">
+            <div id="feedback-icon" class="text-8xl mb-4"></div>
+            <h3 id="feedback-title" class="font-fredoka text-3xl mb-2"></h3>
+            <p id="feedback-message" class="text-gray-600 text-lg mb-6 font-semibold"></p>
+            <button id="next-btn" onclick="nextQuestion()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-fredoka text-xl px-8 py-3 rounded-2xl shadow-lg hover:shadow-xl transform transition active:scale-95">
+                Lanjut <i class="fas fa-arrow-right ml-2"></i>
+            </button>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="results-screen" class="hidden flex flex-col items-center text-center py-8">
+            <div class="text-7xl mb-4">🎖️</div>
+            <h2 class="font-fredoka text-3xl text-emerald-600 mb-2">Luar Biasa! Level 2 Tuntas!</h2>
+            <p class="text-gray-600 text-lg mb-6">Kamu semakin pintar dan hebat!</p>
+            
+            <div class="bg-emerald-100 border-4 border-emerald-300 rounded-3xl p-6 mb-8 w-full max-w-md">
+                <p class="text-xl font-bold text-emerald-800 mb-2">Total Bintang Level 2:</p>
+                <div class="flex justify-center items-center space-x-2 text-4xl font-fredoka text-yellow-500">
+                    <i class="fas fa-star"></i>
+                    <span id="final-score">0</span>
+                    <span>/ 15</span>
+                </div>
+            </div>
+
+            <button onclick="restartQuiz()" class="bg-teal-600 hover:bg-teal-700 text-white font-fredoka text-xl px-8 py-4 rounded-2xl shadow-lg hover:shadow-xl transform transition active:scale-95">
+                <i class="fas fa-redo mr-2"></i> Ulangi Level 2
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        const quizData = [
+            // --- 5 SOAL MENULIS / MELENGKAPI (LEVEL 2) ---
+            {
+                category: "Menulis",
+                instruction: "Lengkapilah suku kata yang hilang!",
+                illustration: "🚲",
+                display: "Se - pe - [ ... ]",
+                options: ["da", "du", "di", "do"],
+                correct: 0,
+                explanation: "Se - pe - da = Sepeda"
+            },
+            {
+                category: "Menulis",
+                instruction: "Lengkapilah suku kata yang hilang!",
+                illustration: "🧸",
+                display: "Bo - ne - [ ... ]",
+                options: ["ka", "ku", "ki", "ko"],
+                correct: 0,
+                explanation: "Bo - ne - ka = Boneka"
+            },
+            {
+                category: "Menulis",
+                instruction: "Lengkapilah suku kata yang hilang!",
+                illustration: "📷",
+                display: "Ka - me - [ ... ]",
+                options: ["ra", "ri", "ru", "ro"],
+                correct: 0,
+                explanation: "Ka - me - ra = Kamera"
+            },
+            {
+                category: "Menulis",
+                instruction: "Lengkapilah suku kata yang hilang!",
+                illustration: "🚂",
+                display: "Ke - re - [ ... ]",
+                options: ["ta", "ti", "tu", "to"],
+                correct: 0,
+                explanation: "Ke - re - ta = Kereta"
+            },
+            {
+                category: "Menulis",
+                instruction: "Lengkapilah suku kata yang hilang!",
+                illustration: "🐙",
+                display: "Gu - ri - [ ... ]",
+                options: ["ta", "ti", "tu", "te"],
+                correct: 0,
+                explanation: "Gu - ri - ta = Gurita"
+            },
+
+            // --- 5 SOAL MEMBACA (LEVEL 2) ---
+            {
+                category: "Membaca",
+                instruction: "Bacalah suku kata dan pilih kata yang benar!",
+                illustration: "🌈",
+                display: "pe - la - ngi",
+                options: ["Pelangi", "Perahu", "Pepaya", "Petani"],
+                correct: 0,
+                explanation: "pe-la-ngi dibaca Pelangi!"
+            },
+            {
+                category: "Membaca",
+                instruction: "Bacalah suku kata dan pilih kata yang benar!",
+                illustration: "👑",
+                display: "mah - ko - ta",
+                options: ["Matahari", "Mahkota", "Makanan", "Menara"],
+                correct: 1,
+                explanation: "mah-ko-ta dibaca Mahkota!"
+            },
+            {
+                category: "Membaca",
+                instruction: "Bacalah suku kata dan pilih kata yang benar!",
+                illustration: "🚪",
+                display: "le - ma - ri",
+                options: ["Kemeja", "Lemari", "Lelaki", "Lencana"],
+                correct: 1,
+                explanation: "le-ma-ri dibaca Lemari!"
+            },
+            {
+                category: "Membaca",
+                instruction: "Bacalah suku kata dan pilih kata yang benar!",
+                illustration: "🌻",
+                display: "se - ma- nga - t",
+                options: ["Matahari", "Semangat", "Bunga", "Sepatu"],
+                correct: 1,
+                explanation: "se-ma-nga-t dibaca Semangat!"
+            },
+            {
+                category: "Membaca",
+                instruction: "Bacalah suku kata dan pilih kata yang benar!",
+                illustration: "⛵",
+                display: "pe - ra - hu",
+                options: ["Pelangi", "Perahu", "Petani", "Sepatu"],
+                correct: 1,
+                explanation: "pe-ra-hu dibaca Perahu!"
+            },
+
+            // --- 5 SOAL BERHITUNG (LEVEL 2: 6 - 10) ---
+            {
+                category: "Berhitung",
+                instruction: "Berapakah jumlah pisang semuanya?",
+                illustration: "🍌 🍌 🍌 🍌 + 🍌 🍌 🍌 🍌",
+                display: "4 + 4 = ...",
+                options: ["6", "7", "8", "9"],
+                correct: 2,
+                explanation: "4 pisang ditambah 4 pisang sama dengan 8!"
+            },
+            {
+                category: "Berhitung",
+                instruction: "Berapakah hasil penjumlahan ini?",
+                illustration: "⭐ ⭐ ⭐ ⭐ ⭐ + ⭐ ⭐ ⭐",
+                display: "5 + 3 = ...",
+                options: ["7", "8", "9", "10"],
+                correct: 1,
+                explanation: "5 bintang ditambah 3 bintang sama dengan 8!"
+            },
+            {
+                category: "Berhitung",
+                instruction: "Hitunglah penjumlahan bintang berikut!",
+                illustration: "⭐ ⭐ ⭐ ⭐ ⭐ + ⭐ ⭐ ⭐ ⭐ ⭐",
+                display: "5 + 5 = ...",
+                options: ["8", "9", "10", "7"],
+                correct: 2,
+                explanation: "5 bintang ditambah 5 bintang sama dengan 10!"
+            },
+            {
+                category: "Berhitung",
+                instruction: "Hitunglah sisa balon berikut!",
+                illustration: "🎈 🎈 🎈 🎈 🎈 🎈 🎈 (Dikurangi 3)",
+                display: "7 - 3 = ...",
+                options: ["3", "4", "5", "6"],
+                correct: 1,
+                explanation: "7 balon dikurangi 3 sisanya tinggal 4!"
+            },
+            {
+                category: "Berhitung",
+                instruction: "Berapakah sisa kue ini?",
+                illustration: "🧁 🧁 🧁 🧁 🧁 🧁 🧁 🧁 🧁 🧁 (Dikurangi 4)",
+                display: "10 - 4 = ...",
+                options: ["5", "6", "7", "4"],
+                correct: 1,
+                explanation: "10 kue dikurangi 4 sisanya tinggal 6!"
+            }
+        ];
+
+        let currentIdx = 0;
+        let score = 0;
+
+        function loadQuestion() {
+            const q = quizData[currentIdx];
+            
+            document.getElementById("current-question").innerText = currentIdx + 1;
+            document.getElementById("score").innerText = score;
+            document.getElementById("progress-bar").style.width = `${((currentIdx + 1) / quizData.length) * 100}%`;
+            
+            const badge = document.getElementById("category-badge");
+            badge.innerText = q.category;
+            if(q.category === "Menulis") badge.className = "bg-pink-400 text-white font-fredoka text-sm px-3 py-1 rounded-full shadow";
+            else if(q.category === "Membaca") badge.className = "bg-purple-400 text-white font-fredoka text-sm px-3 py-1 rounded-full shadow";
+            else badge.className = "bg-green-500 text-white font-fredoka text-sm px-3 py-1 rounded-full shadow";
+
+            document.getElementById("instruction").innerText = q.instruction;
+            document.getElementById("illustration").innerText = q.illustration;
+            document.getElementById("question-display").innerText = q.display;
+
+            const optionsContainer = document.getElementById("options-container");
+            optionsContainer.innerHTML = "";
+
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement("button");
+                btn.className = "btn-choice bg-emerald-50 hover:bg-emerald-100 text-emerald-900 font-fredoka text-2xl py-4 rounded-2xl border-2 border-emerald-300 shadow-md flex items-center justify-center active:bg-emerald-200";
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(idx);
+                optionsContainer.appendChild(btn);
+            });
+
+            const card = document.getElementById("question-card");
+            card.classList.remove("pop-in");
+            void card.offsetWidth;
+            card.classList.add("pop-in");
+        }
+
+        function checkAnswer(selectedIdx) {
+            const q = quizData[currentIdx];
+            const isCorrect = selectedIdx === q.correct;
+
+            const modal = document.getElementById("feedback-modal");
+            const icon = document.getElementById("feedback-icon");
+            const title = document.getElementById("feedback-title");
+            const msg = document.getElementById("feedback-message");
+
+            if (isCorrect) {
+                score++;
+                document.getElementById("score").innerText = score;
+                icon.innerText = "🌟";
+                title.innerText = "Hebat Sekali!";
+                title.className = "font-fredoka text-3xl text-emerald-500 mb-2";
+                msg.innerText = q.explanation;
+            } else {
+                icon.innerText = "💡";
+                title.innerText = "Hampir Benar!";
+                title.className = "font-fredoka text-3xl text-amber-500 mb-2";
+                msg.innerText = `Jawaban yang tepat adalah: ${q.options[q.correct]}\n${q.explanation}`;
+            }
+
+            modal.classList.remove("hidden");
+        }
+
+        function nextQuestion() {
+            document.getElementById("feedback-modal").classList.add("hidden");
+            currentIdx++;
+
+            if (currentIdx < quizData.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById("question-card").classList.add("hidden");
+            document.getElementById("results-screen").classList.remove("hidden");
+            document.getElementById("final-score").innerText = score;
+        }
+
+        function restartQuiz() {
+            currentIdx = 0;
+            score = 0;
+            document.getElementById("results-screen").classList.add("hidden");
+            document.getElementById("question-card").classList.remove("hidden");
+            loadQuestion();
+        }
+
+        window.onload = loadQuestion;
+    </script>
+</body>
+</html>
